@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>sms</title>
+
+    <script src="tailwind.js"></script>
+    
+    <link rel="stylesheet" href="/fontawesome/fontawesome/css/all.min.css">
+   
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    borderRadius: {
+                        'xl': '2rem',
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4338ca, #4f46e5);
+            transform: scale(0.98);
+        }
+        .log-row {
+            transition: background 0.2s;
+        }
+        .log-row:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c7d2fe;
+            border-radius: 10px;
+        }
+        
+                
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0; 
+            margin-left: -20px;    
+            width: 95%;
+            z-index: 10000;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            padding: 5px; 
+            display: flex;
+            justify-content: center;
+        }
+        
+        .header-container {
+            transition: all 0.5s ease;
+            padding: 10px 10px;
+            width: 100%;
+        }
+        
+        
+        .header-scrolled {
+            top: 10px; 
+            padding: 0 0px; 
+        }
+        
+        .header-scrolled .header-container {
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            width: auto;
+            animation: slideDown 0.8s ease;
+        }
+        
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-white/90">
+        <div class="h-full w-full max-w-md p-8 backdrop-blur-md bg-white/90">
+            <div class="text-center">
+                <i class="fas fa-sms text-5xl text-indigo-600 mb-3"></i>
+                <h2 class="text-3xl font-bold text-slate-800">SMS Bot</h2>
+                <p class="text-slate-500 mt-2">بوت ارسال رسائل نصيه</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-slate-700 mb-2"><i class="fas fa-user ml-2"></i>اسم المستخدم</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition" placeholder="أدخل اسمك" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-slate-700 mb-2"><i class="fas fa-phone ml-2"></i>رقم الهاتف</label>
+                    <input type="tel" id="phone" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition" placeholder="٧٧xxxxxxx" required>
+                </div>
+                <button type="submit" class="btn-primary w-full text-white font-semibold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> طلب رمز التحقق
+                </button>
+            </form>
+            <div id="otpSection" class="mt-6 hidden">
+                <label class="block text-slate-700 mb-2"><i class="fas fa-key ml-2"></i>رمز التحقق (OTP)</label>
+                <div class="flex gap-2">
+                    <input type="text" id="otpCode" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="6 أرقام">
+                    
+                </div>
+                
+                <div class="flex gap-2">
+                    <button id="verifyBtn" class=" bg-emerald-600 hover:bg-emerald-700 text-white px-6 rounded-xl transition">تحقق</button>
+                </div>
+            </div>
+            <div id="loginMessage" class="mt-4 text-center text-sm"></div>
+        </div>
+    </div>
+
+
+    <div id="dashboard" class="hidden max-w-7xl mx-auto p-4 pb-20">
+       
+        <div class="flex justify-between items-center mb-8 flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-sms text-3xl text-indigo-600"></i>
+                <h1 class="text-2xl font-bold text-slate-800"></h1>
+            </div>
+            <header id="mainHeader" class="fixed-header">
+                <div class="header-container">
+                    <div class="flex items-center gap-4 s">
+                        <span class="bg-white/60 backdrop-blur px-4 py-2 rounded-full text-sm">
+                            <i class="fas fa-user ml-1"></i><span id="dashboardUsername"></span>
+                        </span>
+                        <button id="logoutBtn" class="bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm transition">
+                            <i class="fas fa-sign-out-alt ml-1"></i>خروج
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <div class="glass-card rounded-2xl p-6 shadow-soft">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class=" text-indigo-500"></i> الإعدادات</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-slate-700 text-sm mb-1">رقم المستلم</label>
+                        <input type="text" id="recipient" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white/70 focus:ring-2 focus:ring-indigo-300" placeholder="77xxxxxxx">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-slate-700 text-sm mb-1">عدد الرسائل</label>
+                            <input type="number" id="totalCount" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white/70">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 text-sm mb-1">المدة (ثواني)</label>
+                            <input type="number" id="intervalSec" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white/70">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 text-sm mb-1">رابط بوابة SMS</label>
+                        <input type="url" id="gatewayUrl" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white/70" placeholder="http://localhost:8080/sms">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <i class="fas  text-emerald-600"></i>
+                            <span>إضافة توقيع البوت</span>
+                        </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="signatureEnabled" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="text" id="signatureText" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white/70" placeholder="نص التوقيع">
+                    </div>
+                    <button id="saveSettingsBtn" class="bg-indigo-600 text-white w-full py-2 rounded-xl hover:bg-indigo-700 transition flex items-center justify-center gap-2"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                </div>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 shadow-soft">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class=" text-indigo-500"></i> الكلمات المفتاحية</h2>
+                <textarea id="keywordsTextarea" rows="6" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/70 focus:ring-2 focus:ring-indigo-300" placeholder="أدخل كلمة في كل سطر"></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button id="saveKeywordsBtn" class="bg-emerald-600 text-white flex-1 py-2 rounded-xl hover:bg-emerald-700 transition"><i class="fas fa-save ml-1"></i> حفظ</button>
+                    <button id="testRandomBtn" class="bg-slate-200 text-slate-700 flex-1 py-2 rounded-xl hover:bg-slate-300 transition"><i class="fas fa-random ml-1"></i> اختبار عشوائي</button>
+                </div>
+                <div id="randomPreview" class="mt-3 text-sm text-slate-500 italic bg-white/50 p-2 rounded-xl"></div>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-6 shadow-soft">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="text-indigo-500"></i> التحكم بالإرسال</h2>
+                <div class="flex gap-3">
+                    <button id="startBtn" class="bg-green-600 hover:bg-green-700 text-white flex-1 py-3 rounded-xl transition flex items-center justify-center gap-2"><i class="fas fa-play"></i> بدء الإرسال</button>
+                    <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-xl transition flex items-center justify-center gap-2"><i class="fas fa-stop"></i> إيقاف</button>
+                </div>
+                <div id="jobStatus" class="mt-4 p-3 bg-white/50 rounded-xl text-center text-slate-600 text-sm">
+                    الحالة: <span id="statusText">غير نشط</span>
+                </div>
+                <button id="testSendBtn" class="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-xl transition flex items-center justify-center gap-2"><i class="fas fa-vial"></i> اختبار إرسال رسالة</button>
+            </div>
+
+
+            <div class="glass-card rounded-2xl p-6 shadow-soft lg:col-span-2">
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-history text-indigo-500"></i> سجل النشاطات</h2>
+                    <button id="clearLogsBtn" class="text-red-500 text-sm hover:text-red-700 transition"><i class="fas fa-trash-alt ml-1"></i> مسح السجل</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="text-right p-2">المعرف</th>
+                                <th class="text-right p-2">نص الرسالة</th>
+                                <th class="text-right p-2">الوقت</th>
+                                <th class="text-right p-2">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <tr><td colspan="4" class="text-center py-4 text-slate-400">جاري التحميل...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let sessionCheckInterval = null;
+        let logsInterval = null;
+        let statusInterval = null;
+
+     
+        async function apiCall(url, options = {}) {
+            const res = await fetch(url, {
+                headers: { 'Content-Type': 'application/json' },
+                ...options
+            });
+            if (!res.ok) {
+                const error = await res.json();
+                throw new Error(error.error || 'Request failed');
+            }
+            return res.json();
+        }
+
+        async function checkSession() {
+            try {
+                const data = await apiCall('/api/session');
+                if (data.authenticated) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    document.getElementById('dashboardUsername').innerText = data.user.username;
+                    loadDashboardData();
+                    startAutoRefresh();
+                } else {
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('dashboard').classList.add('hidden');
+                    stopAutoRefresh();
+                }
+            } catch (err) {
+                console.error('Session check failed', err);
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+              
+                const settings = await apiCall('/api/settings');
+                document.getElementById('recipient').value = settings.recipient || '';
+                document.getElementById('totalCount').value = settings.totalCount || 1;
+                document.getElementById('intervalSec').value = settings.intervalSec || 2;
+                document.getElementById('gatewayUrl').value = settings.gatewayUrl || '';
+                document.getElementById('signatureEnabled').checked = settings.signatureEnabled || false;
+                document.getElementById('signatureText').value = settings.signatureText || '';
+
+ 
+                const keywordsData = await apiCall('/api/keywords');
+                document.getElementById('keywordsTextarea').value = keywordsData.keywords.join('\n');
+
+         
+                await refreshLogs();
+                await refreshStatus();
+            } catch (err) {
+                console.error('Error loading dashboard data', err);
+            }
+        }
+
+        async function refreshLogs() {
+            try {
+                const data = await apiCall('/api/logs');
+                const tbody = document.getElementById('logsTableBody');
+                if (!data.logs.length) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">لا توجد رسائل بعد</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.logs.map(log => `
+                    <tr class="log-row border-b border-slate-100">
+                        <td class="p-2 text-xs text-slate-500">${log.id.slice(0,8)}</td>
+                        <td class="p-2 max-w-xs truncate" title="${log.text}">${log.text.substring(0, 50)}${log.text.length > 50 ? '...' : ''}</td>
+                        <td class="p-2 text-xs">${new Date(log.time).toLocaleString()}</td>
+                        <td class="p-2">
+                            <span class="px-2 py-1 rounded-full text-xs ${log.status === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${log.status === 'success' ? 'ناجح' : 'فشل'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load logs', err);
+            }
+        }
+
+        async function refreshStatus() {
+            try {
+                const status = await apiCall('/api/status');
+                const statusSpan = document.getElementById('statusText');
+                if (status.active) {
+                    statusSpan.innerHTML = `<span class="text-green-600"><i class="fas fa-sync-alt fa-spin ml-1"></i> جاري الإرسال (${status.sent}/${status.total})</span>`;
+                } else {
+                    statusSpan.innerHTML = '<span class="text-slate-500">غير نشط</span>';
+                }
+            } catch (err) {
+                console.error('Status refresh failed', err);
+            }
+        }
+
+        function startAutoRefresh() {
+            if (logsInterval) clearInterval(logsInterval);
+            if (statusInterval) clearInterval(statusInterval);
+            logsInterval = setInterval(refreshLogs, 3000);
+            statusInterval = setInterval(refreshStatus, 2000);
+        }
+
+        function stopAutoRefresh() {
+            if (logsInterval) clearInterval(logsInterval);
+            if (statusInterval) clearInterval(statusInterval);
+            logsInterval = null;
+            statusInterval = null;
+        }
+
+        // Event Listeners
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const phone = document.getElementById('phone').value;
+            try {
+                const res = await apiCall('/api/login/send-otp', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, phone })
+                });
+
+                document.getElementById('otpSection').classList.remove('hidden');
+                document.getElementById('loginMessage').innerHTML = `<span class="text-emerald-600"><i class="fas fa-check-circle"></i> تم إرسال الرمز</span>`;
+
+                window.pendingPhone = phone;
+            } catch (err) {
+                document.getElementById('loginMessage').innerHTML = `<span class="text-red-500">${err.message}</span>`;
+            }
+        });
+
+        document.getElementById('verifyBtn').addEventListener('click', async () => {
+            const otp = document.getElementById('otpCode').value;
+            const phone = window.pendingPhone;
+            if (!otp) return;
+            try {
+                await apiCall('/api/login/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ phone, otp })
+                });
+
+                checkSession();
+            } catch (err) {
+                document.getElementById('loginMessage').innerHTML = `<span class="text-red-500">${err.message}</span>`;
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await apiCall('/api/logout', { method: 'POST' });
+            checkSession();
+        });
+
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            const settings = {
+                recipient: document.getElementById('recipient').value,
+                totalCount: parseInt(document.getElementById('totalCount').value),
+                intervalSec: parseInt(document.getElementById('intervalSec').value),
+                gatewayUrl: document.getElementById('gatewayUrl').value,
+                signatureEnabled: document.getElementById('signatureEnabled').checked,
+                signatureText: document.getElementById('signatureText').value
+            };
+            try {
+                await apiCall('/api/settings', {
+                    method: 'POST',
+                    body: JSON.stringify(settings)
+                });
+                alert('تم حفظ الإعدادات');
+            } catch (err) {
+                alert('فشل الحفظ: ' + err.message);
+            }
+        });
+
+        document.getElementById('saveKeywordsBtn').addEventListener('click', async () => {
+            const raw = document.getElementById('keywordsTextarea').value;
+            const keywords = raw.split('\n').filter(k => k.trim().length > 0);
+            try {
+                await apiCall('/api/keywords', {
+                    method: 'POST',
+                    body: JSON.stringify({ keywords })
+                });
+                alert('تم حفظ الكلمات المفتاحية');
+            } catch (err) {
+                alert('فشل الحفظ: ' + err.message);
+            }
+        });
+
+        document.getElementById('testRandomBtn').addEventListener('click', async () => {
+            
+            const raw = document.getElementById('keywordsTextarea').value;
+            const keywords = raw.split('\n').filter(k => k.trim().length > 0);
+            const signatureEnabled = document.getElementById('signatureEnabled').checked;
+            const signatureText = document.getElementById('signatureText').value;
+            // Simulate same random logic as backend
+            if (keywords.length === 0) {
+                document.getElementById('randomPreview').innerHTML = '⚠️ أضف كلمات أولاً';
+                return;
+            }
+            const maxWords = Math.min(5, keywords.length);
+            const wordCount = Math.floor(Math.random() * maxWords) + 1;
+            const shuffled = [...keywords];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            const selected = shuffled.slice(0, wordCount);
+            let message = selected.join(' ');
+            if (signatureEnabled) message += signatureText;
+            document.getElementById('randomPreview').innerHTML = `📝 ${message}`;
+        });
+
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            try {
+                const res = await apiCall('/api/start', { method: 'POST' });
+                alert('بدأ الإرسال');
+                refreshStatus();
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', async () => {
+            try {
+                await apiCall('/api/stop', { method: 'POST' });
+                alert('تم إيقاف الإرسال');
+                refreshStatus();
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+
+        document.getElementById('testSendBtn').addEventListener('click', async () => {
+            const recipient = document.getElementById('recipient').value;
+            const gatewayUrl = document.getElementById('gatewayUrl').value;
+            if (!recipient || !gatewayUrl) {
+                alert('يرجى تعيين رقم المستلم ورابط البوابة أولاً');
+                return;
+            }
+            const raw = document.getElementById('keywordsTextarea').value;
+            const keywords = raw.split('\n').filter(k => k.trim().length > 0);
+            const signatureEnabled = document.getElementById('signatureEnabled').checked;
+            const signatureText = document.getElementById('signatureText').value;
+            const message = generatePreviewMessage(keywords, signatureEnabled, signatureText);
+            try {
+                const result = await apiCall('/api/test-send', {
+                    method: 'POST',
+                    body: JSON.stringify({ recipient, message, gatewayUrl })
+                });
+                if (result.success) alert('تم الإرسال بنجاح');
+                else alert('فشل الإرسال: ' + result.error);
+                refreshLogs();
+            } catch (err) {
+                alert('خطأ: ' + err.message);
+            }
+        });
+
+        function generatePreviewMessage(keywords, signatureEnabled, signatureText) {
+            if (!keywords.length) return 'رسالة افتراضية' + (signatureEnabled ? signatureText : '');
+            const maxWords = Math.min(5, keywords.length);
+            const wordCount = Math.floor(Math.random() * maxWords) + 1;
+            const shuffled = [...keywords];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            const selected = shuffled.slice(0, wordCount);
+            let message = selected.join(' ');
+            if (signatureEnabled) message += signatureText;
+            return message;
+        }
+
+        document.getElementById('clearLogsBtn').addEventListener('click', async () => {
+            if (confirm('هل أنت متأكد من مسح سجل الرسائل؟')) {
+                await apiCall('/api/logs/clear', { method: 'POST' });
+                refreshLogs();
+            }
+        });
+        
+        window.addEventListener('scroll', function() {
+    const header = document.getElementById('mainHeader');
+    if (window.scrollY > 120) {
+        header.classList.add('header-scrolled');
+    } else {
+        header.classList.remove('header-scrolled');
+    }
+});
+
+
+        // Initial session check
+        checkSession();
+    </script>
+</body>
+</html>
